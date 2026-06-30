@@ -1,5 +1,32 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Brand palette: navy base + blue accents */
+  --color-navy-50: #f3f5f9;
+  --color-navy-100: #e2e7f0;
+  --color-navy-700: #2b3a5c;
+  --color-navy: #1e2a44;
+  --color-navy-900: #141d33;
+
+  --color-accent-50: #eaf2ff;
+  --color-accent-light: #6ea8fe;
+  --color-accent: #2f6fed;
+  --color-accent-dark: #1d4ed8;
+
+  --color-cream: #eef4fb;
+
+  /* Fonts (wired via next/font CSS variables) */
+  --font-sans: var(--font-ledger), ui-serif, Georgia, serif;
+  --font-display: var(--font-nixie), ui-sans-serif, system-ui, sans-serif;
+  --font-byline: var(--font-caveat), ui-sans-serif, cursive;
+}
 
 body {
-  @apply antialiased;
+  @apply antialiased text-navy-900 bg-white;
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
 }

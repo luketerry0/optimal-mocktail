@@ -41,12 +41,49 @@ export const postType = defineType({
       of: [
         {
           type: 'block',
+          marks: {
+            annotations: [
+              {
+                name: 'internalLink',
+                title: 'Internal link (to another post)',
+                type: 'object',
+                fields: [
+                  {
+                    name: 'reference',
+                    title: 'Post',
+                    type: 'reference',
+                    to: [{ type: 'post' }],
+                  },
+                ],
+              },
+              {
+                name: 'link',
+                title: 'External link',
+                type: 'object',
+                fields: [
+                  {
+                    name: 'href',
+                    title: 'URL',
+                    type: 'url',
+                    validation: (Rule) =>
+                      Rule.uri({ scheme: ['http', 'https', 'mailto', 'tel'] }),
+                  },
+                ],
+              },
+            ],
+          },
         },
         {
           type: 'image',
           options: {
             hotspot: true,
           },
+        },
+        {
+          type: 'youtube',
+        },
+        {
+          type: 'recipe',
         },
       ],
     }),

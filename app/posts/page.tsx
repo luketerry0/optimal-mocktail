@@ -1,12 +1,17 @@
 import Link from 'next/link'
-import { draftMode } from 'next/headers'
+import Image from 'next/image'
 import { sanityClient } from '@/lib/sanity.client'
+import { isPreviewEnabled } from '@/lib/draft-mode'
+import { urlForImage } from '@/lib/sanity.image'
+
+export const dynamic = 'force-dynamic'
 
 interface Post {
   _id: string
   title: string
   slug: { current: string }
   excerpt?: string
+  image?: any
   publishedAt: string
   author?: string
 }
@@ -19,8 +24,7 @@ async function getPosts(): Promise<Post[]> {
       return []
     }
     
-    const draft = await draftMode()
-    const preview = draft.isEnabled
+    const preview = await isPreviewEnabled()
 
     const posts = await sanityClient(preview).fetch(
       `*[_type == "post" ${!preview ? '&& defined(publishedAt)' : ''}] | order(publishedAt desc) {
@@ -28,6 +32,7 @@ async function getPosts(): Promise<Post[]> {
         title,
         slug,
         excerpt,
+        image,
         publishedAt,
         author
       }`
@@ -41,42 +46,66 @@ async function getPosts(): Promise<Post[]> {
 
 export default async function PostsPage() {
   const posts = await getPosts()
-  const draft = await draftMode()
+  const preview = await isPreviewEnabled()
 
   return (
     <div>
-      {draft.isEnabled && (
+      {preview && (
         <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-6">
           <p className="text-yellow-800 text-sm">
-            📝 <strong>Draft Mode Enabled</strong> — You&apos;re viewing unpublished content
+            📝 <strong>Preview Mode</strong> — You&apos;re viewing unpublished content
           </p>
         </div>
       )}
 
-      <h1 className="text-3xl font-bold mb-8">All Recipes</h1>
+      <h1 className="mb-8 text-3xl font-bold text-navy sm:text-4xl">All Recipes</h1>
 
       {posts.length === 0 ? (
-        <div className="bg-blue-50 border border-blue-200 rounded p-4">
-          <p className="text-blue-800 mb-2">No recipes found yet.</p>
-          <p className="text-sm text-blue-700">
-            Configure your Sanity project ID in <code className="bg-blue-100 px-1">.env.local</code> to see published recipes.
+        <div className="rounded-2xl border border-navy-100 bg-cream p-6">
+          <p className="mb-2 font-semibold text-navy">No recipes found yet.</p>
+          <p className="text-sm text-navy-700">
+            Configure your Sanity project ID in{' '}
+            <code className="rounded bg-white px-1">.env.local</code> to see published recipes.
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <article key={post._id} className="border-b pb-6">
-              <Link href={`/posts/${post.slug.current}`}>
-                <h2 className="text-2xl font-bold hover:text-blue-600 cursor-pointer">
+            <Link
+              key={post._id}
+              href={`/posts/${post.slug.current}`}
+              className="group flex flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              {post.image ? (
+                <div className="relative aspect-[16/10] w-full overflow-hidden">
+                  <Image
+                    src={urlForImage(post.image).width(600).height(375).fit('crop').url()}
+                    alt={post.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-[16/10] w-full bg-cream" />
+              )}
+              <div className="flex flex-1 flex-col p-5">
+                <h2 className="text-lg font-bold text-navy transition group-hover:text-accent">
                   {post.title}
                 </h2>
-              </Link>
-              {post.excerpt && <p className="text-gray-600 my-2">{post.excerpt}</p>}
-              <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
-                {post.author && <span>by {post.author}</span>}
+                {post.excerpt && (
+                  <p className="mt-2 line-clamp-2 text-sm text-navy-700">{post.excerpt}</p>
+                )}
+                <div className="mt-4 flex items-center justify-between border-t border-navy-100 pt-3 text-xs text-navy-700">
+                  <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                  {post.author && (
+                    <span className="font-byline text-xl leading-none text-accent">
+                      by {post.author}
+                    </span>
+                  )}
+                </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       )}
