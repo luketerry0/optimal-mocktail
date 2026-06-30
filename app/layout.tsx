@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Nixie_One, Ledger, Caveat } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
+import { Analytics } from './Analytics'
 import { SiteHeader } from './SiteHeader'
 import './globals.css'
 
