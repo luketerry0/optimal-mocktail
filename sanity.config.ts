@@ -2,6 +2,7 @@ import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './sanity/schema'
+import { PublishWithTimestamp } from './sanity/actions/PublishWithTimestamp'
 
 const previewUrl = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000'
 
@@ -13,6 +14,14 @@ export default defineConfig({
   plugins: [structureTool(), visionTool()],
   schema: {
     types: schemaTypes,
+  },
+  document: {
+    actions: (prev, context) =>
+      context.schemaType === 'post'
+        ? prev.map((action) =>
+            action.action === 'publish' ? PublishWithTimestamp : action
+          )
+        : prev,
   },
   previewUrl: {
     draftMode: {

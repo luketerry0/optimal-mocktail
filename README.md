@@ -149,7 +149,6 @@ Studio: `npx sanity deploy`.
 
 - `title` (string, required) – Post title
 - `slug` (slug, required) – URL-friendly identifier
-- `excerpt` (string) – Short description (max 200 chars)
 - `image` (image) – Featured image
 - `body` (portable text) – Rich text with images, YouTube embeds, and recipe cards
 - `publishedAt` (datetime, required) – Publication date
