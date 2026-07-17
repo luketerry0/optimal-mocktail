@@ -40,6 +40,13 @@ body {
   background-attachment: fixed;
 }
 
+/* Drop the dot texture on small screens */
+@media (max-width: 640px) {
+  body {
+    background-image: none;
+  }
+}
+
 h1, h2, h3, h4, h5 {
   font-family: var(--font-display);
 }
