@@ -93,13 +93,13 @@ export default async function Home() {
               </span>
             </div>
           </div>
-          <div className="relative mx-auto hidden aspect-square w-32 sm:block">
+          <div className="relative mx-auto hidden aspect-square w-52 sm:block lg:w-60">
             <Image
               src="/logo.png"
               alt="Optimal Mocktail"
               fill
               priority
-              sizes="128px"
+              sizes="240px"
               className="rounded-full object-cover shadow-2xl ring-4 ring-gold/40"
             />
           </div>

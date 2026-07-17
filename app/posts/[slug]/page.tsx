@@ -176,7 +176,7 @@ function RecipeCard({ recipe }: { recipe?: Recipe }) {
   }
 
   return (
-    <div className="menu-card my-10 rounded-sm px-6 py-8 sm:px-10 sm:py-10">
+    <div className="not-prose menu-card my-10 rounded-sm px-6 py-8 sm:px-10 sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -196,23 +196,23 @@ function RecipeCard({ recipe }: { recipe?: Recipe }) {
         </div>
 
         {(servings || glassware || garnish) && (
-          <dl className="mx-auto mt-5 flex max-w-lg flex-col items-center gap-3 text-center sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10">
+          <dl className="mt-6 grid grid-cols-1 gap-5 text-center sm:grid-cols-3">
             {servings ? (
-              <div className="flex flex-col items-center">
-                <dt className="menu-label text-[0.6rem] text-gold">Yield</dt>
-                <dd className="font-display text-lg text-navy">{servings}</dd>
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-gold">Yield</dt>
+                <dd className="ms-0 mt-1 font-display text-lg text-navy">{servings}</dd>
               </div>
             ) : null}
             {glassware ? (
-              <div className="flex flex-col items-center">
-                <dt className="menu-label text-[0.6rem] text-gold">Glassware</dt>
-                <dd className="font-display text-lg text-navy">{glassware}</dd>
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-gold">Glassware</dt>
+                <dd className="ms-0 mt-1 font-display text-lg text-navy">{glassware}</dd>
               </div>
             ) : null}
             {garnish ? (
-              <div className="flex flex-col items-center">
-                <dt className="menu-label text-[0.6rem] text-gold">Garnish</dt>
-                <dd className="font-display text-lg text-navy">{garnish}</dd>
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-gold">Garnish</dt>
+                <dd className="ms-0 mt-1 font-display text-lg text-navy">{garnish}</dd>
               </div>
             ) : null}
           </dl>

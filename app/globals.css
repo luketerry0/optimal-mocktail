@@ -2,17 +2,17 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* Brand palette derived from the logo: cobalt blue base, warm cream, rust-orange pop */
+  /* Brand palette derived from the logo: cobalt blue base, warm cream, gold pop */
   --color-navy-50: #f1f5fc;
   --color-navy-100: #dce7f7;
   --color-navy-700: #2a5aa8;
   --color-navy: #14448f;
   --color-navy-900: #0d2f66;
 
-  --color-accent-50: #fdf1e4;
-  --color-accent-light: #f4a45c;
-  --color-accent: #e0721b;
-  --color-accent-dark: #bf5c12;
+  --color-accent-50: #fbf4d9;
+  --color-accent-light: #e6c65c;
+  --color-accent: #c9a227;
+  --color-accent-dark: #a5831c;
 
   --color-cream: #f7efdd;
 
@@ -33,7 +33,7 @@ body {
   font-size: 1.075rem;
   /* Warm paper background with faint citrus-bubble texture */
   background-color: #faf6ec;
-  background-image: radial-gradient(rgba(224, 114, 27, 0.06) 1.4px, transparent 1.5px),
+  background-image: radial-gradient(rgba(201, 162, 39, 0.07) 1.4px, transparent 1.5px),
     radial-gradient(rgba(20, 68, 143, 0.05) 1.4px, transparent 1.5px);
   background-position: 0 0, 22px 22px;
   background-size: 44px 44px;
@@ -108,7 +108,7 @@ h1, h2, h3, h4, h5 {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 18% 120%, rgba(244, 164, 92, 0.35), transparent 42%),
+    radial-gradient(circle at 18% 120%, rgba(230, 198, 92, 0.4), transparent 42%),
     radial-gradient(circle at 85% -10%, rgba(110, 168, 254, 0.35), transparent 45%),
     linear-gradient(160deg, #1a56b0 0%, #14448f 55%, #0d2f66 100%);
 }
@@ -125,9 +125,9 @@ h1, h2, h3, h4, h5 {
   color: #fff;
   text-shadow:
     0 0 4px rgba(255, 255, 255, 0.85),
-    0 0 12px rgba(244, 164, 92, 0.85),
-    0 0 22px rgba(224, 114, 27, 0.7),
-    0 0 40px rgba(224, 114, 27, 0.5);
+    0 0 12px rgba(230, 198, 92, 0.85),
+    0 0 22px rgba(201, 162, 39, 0.7),
+    0 0 40px rgba(201, 162, 39, 0.5);
 }
 
 .neon-gold {
