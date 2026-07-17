@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { AutoSlugInput } from '../components/AutoSlugInput'
 
 export const postType = defineType({
   name: 'post',
@@ -15,16 +16,16 @@ export const postType = defineType({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {
-        source: 'title',
+      components: {
+        input: AutoSlugInput,
       },
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'excerpt',
-      title: 'Excerpt',
-      type: 'string',
-      validation: (Rule) => Rule.max(200),
+      validation: (Rule) =>
+        Rule.required().custom((slug) => {
+          if (!slug?.current) return 'A slug will be generated once you add a title'
+          return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.current)
+            ? true
+            : 'Slug can only contain lowercase letters, numbers, and hyphens (no spaces).'
+        }),
     }),
     defineField({
       name: 'image',
@@ -41,6 +42,7 @@ export const postType = defineType({
       of: [
         {
           type: 'block',
+          of: [{ type: 'footnote' }],
           marks: {
             annotations: [
               {
@@ -91,12 +93,28 @@ export const postType = defineType({
       name: 'publishedAt',
       title: 'Published At',
       type: 'datetime',
-      validation: (Rule) => Rule.required(),
+      description: 'Set automatically the first time this recipe is published.',
+      readOnly: true,
     }),
     defineField({
       name: 'author',
       title: 'Author',
       type: 'string',
+    }),
+    defineField({
+      name: 'featured',
+      title: 'Featured',
+      type: 'boolean',
+      description: 'Highlight this article as a featured recipe.',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'alcoholSubstitute',
+      title: 'Alcohol Substitute',
+      type: 'boolean',
+      description:
+        'Turn on if this recipe is an alcohol substitute rather than a mocktail.',
+      initialValue: false,
     }),
   ],
   preview: {

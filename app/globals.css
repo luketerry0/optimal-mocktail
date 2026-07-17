@@ -2,31 +2,228 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* Brand palette: navy base + blue accents */
-  --color-navy-50: #f3f5f9;
-  --color-navy-100: #e2e7f0;
-  --color-navy-700: #2b3a5c;
-  --color-navy: #1e2a44;
-  --color-navy-900: #141d33;
+  /* Brand palette derived from the logo: cobalt blue base, warm cream, gold pop */
+  --color-navy-50: #f1f5fc;
+  --color-navy-100: #dce7f7;
+  --color-navy-700: #2a5aa8;
+  --color-navy: #14448f;
+  --color-navy-900: #0d2f66;
 
-  --color-accent-50: #eaf2ff;
-  --color-accent-light: #6ea8fe;
-  --color-accent: #2f6fed;
-  --color-accent-dark: #1d4ed8;
+  --color-accent-50: #fbf4d9;
+  --color-accent-light: #e6c65c;
+  --color-accent: #c9a227;
+  --color-accent-dark: #a5831c;
 
-  --color-cream: #eef4fb;
+  --color-cream: #f7efdd;
+
+  /* Brass / gold accent for the fancy-bar menu feel */
+  --color-gold: #c9a227;
+  --color-gold-light: #e6c65c;
 
   /* Fonts (wired via next/font CSS variables) */
-  --font-sans: var(--font-ledger), ui-serif, Georgia, serif;
-  --font-display: var(--font-nixie), ui-sans-serif, system-ui, sans-serif;
-  --font-byline: var(--font-caveat), ui-sans-serif, cursive;
+  --font-sans: var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-byline: var(--font-jersey), "Yellowtail", cursive;
+  --font-jersey: var(--font-jersey), "Yellowtail", cursive;
 }
 
 body {
-  @apply antialiased text-navy-900 bg-white;
+  @apply antialiased text-navy-900;
   font-family: var(--font-sans);
+  font-size: 1.075rem;
+  /* Warm paper background with faint citrus-bubble texture */
+  background-color: #faf6ec;
+  background-image: radial-gradient(rgba(201, 162, 39, 0.07) 1.4px, transparent 1.5px),
+    radial-gradient(rgba(20, 68, 143, 0.05) 1.4px, transparent 1.5px);
+  background-position: 0 0, 22px 22px;
+  background-size: 44px 44px;
+  background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-display);
+}
+
+/* Small-caps section label, like a menu heading */
+.menu-label {
+  font-family: var(--font-display);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+/* Framed cream "menu card" with a double gold rule */
+.menu-card {
+  position: relative;
+  background-color: #fffdf6;
+  border: 1px solid var(--color-gold);
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.35) inset,
+    0 20px 40px -28px rgba(13, 47, 102, 0.55);
+}
+
+.menu-card::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  pointer-events: none;
+}
+
+/* A single menu entry */
+.menu-row {
+  border-bottom: none;
+}
+
+.menu-row:last-child {
+  border-bottom: none;
+}
+
+.menu-leader {
+  border-bottom: 1.5px dotted rgba(201, 162, 39, 0.7);
+}
+
+/* Decorative centered rule with a diamond, for section dividers */
+.menu-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--color-gold);
+}
+
+.menu-divider::before,
+.menu-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  max-width: 120px;
+  background: linear-gradient(to var(--dir, right), transparent, var(--color-gold));
+}
+
+.menu-divider::before {
+  --dir: left;
+}
+
+/* Cobalt hero styled like the top of a bar counter, with rising bubbles */
+.brand-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 120%, rgba(230, 198, 92, 0.4), transparent 42%),
+    radial-gradient(circle at 85% -10%, rgba(110, 168, 254, 0.35), transparent 45%),
+    linear-gradient(160deg, #1a56b0 0%, #14448f 55%, #0d2f66 100%);
+}
+
+.brand-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Jersey-script neon glow for the hero wordmark/tagline */
+.neon-text {
+  color: #fff;
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(230, 198, 92, 0.85),
+    0 0 22px rgba(201, 162, 39, 0.7),
+    0 0 40px rgba(201, 162, 39, 0.5);
+}
+
+.neon-gold {
+  color: #fff;
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(230, 198, 92, 0.85),
+    0 0 24px rgba(201, 162, 39, 0.65);
+}
+
+/* Playful "OPEN" style neon frame around the hero */
+.neon-frame {
+  box-shadow:
+    0 0 0 2px rgba(230, 198, 92, 0.5),
+    0 0 18px rgba(230, 198, 92, 0.35),
+    inset 0 0 22px rgba(20, 68, 143, 0.6);
+}
+
+/* Bubbles rising up through the hero for a fizzy, playful feel */
+.hero-bubbles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-bubbles span {
+  position: absolute;
+  bottom: -24px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.15));
+  opacity: 0;
+  animation: bubble-rise linear infinite;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-320px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bubbles span {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Coaster-style content card */
+.brand-card {
+  position: relative;
+  background-color: #fffdf7;
+  border: 1px solid rgba(224, 114, 27, 0.22);
+  box-shadow: 0 1px 0 rgba(20, 68, 143, 0.04), 0 10px 24px -18px rgba(13, 47, 102, 0.5);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.brand-card:hover {
+  transform: translateY(-4px) rotate(-0.5deg);
+  box-shadow: 0 18px 34px -20px rgba(13, 47, 102, 0.55);
+  border-color: rgba(224, 114, 27, 0.5);
+}
+
+/* Featured corner ribbon */
+.brand-ribbon {
+  position: absolute;
+  top: 14px;
+  left: -34px;
+  transform: rotate(-45deg);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 40px;
+  box-shadow: 0 4px 10px -4px rgba(13, 47, 102, 0.5);
+  z-index: 10;
+}
+
+/* Hand-drawn squiggle section divider */
+.brand-squiggle {
+  height: 12px;
+  width: 120px;
+  background-repeat: repeat-x;
+  background-size: 24px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12' viewBox='0 0 24 12'%3E%3Cpath d='M0 6 Q6 0 12 6 T24 6' fill='none' stroke='%23e0721b' stroke-width='2'/%3E%3C/svg%3E");
 }

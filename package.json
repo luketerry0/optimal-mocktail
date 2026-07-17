@@ -9,7 +9,7 @@
     "lint": "next lint",
     "studio": "sanity dev",
     "studio:build": "sanity build",
-    "publish-preview": "git fetch origin && git branch -f preview origin/main && git checkout preview && git commit --allow-empty -m \"publish preview\" && git push -f origin preview && git checkout main"
+    "publish-preview": "vercel alias set $(vercel deploy --yes) optimal-mocktail-preview.vercel.app"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",

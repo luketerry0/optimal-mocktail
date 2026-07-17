@@ -1,58 +1,41 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { PortableText, type PortableTextComponents } from '@portabletext/react'
+import { PortableText, type PortableTextComponents, type PortableTextBlock } from '@portabletext/react'
 import { sanityClient } from '@/lib/sanity.client'
 import { isPreviewEnabled } from '@/lib/draft-mode'
 import { urlForImage } from '@/lib/sanity.image'
 import { notFound } from 'next/navigation'
 import { CommentForm } from './CommentForm'
 
-const portableTextComponents: PortableTextComponents = {
-  types: {
-    image: ({ value }) => {
-      if (!value?.asset) return null
-      return (
-        <span className="relative block w-full aspect-[16/9] my-6 overflow-hidden rounded-lg">
-          <Image
-            src={urlForImage(value).width(1200).fit('max').url()}
-            alt={value.alt || ''}
-            fill
-            sizes="(max-width: 768px) 100vw, 768px"
-            className="object-cover"
-          />
-        </span>
-      )
-    },
-    youtube: ({ value }) => {
-      const id = getYouTubeId(value?.url)
-      if (!id) return null
-      return (
-        <span className="relative block w-full aspect-video my-6 overflow-hidden rounded-lg">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${id}`}
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            className="absolute inset-0 h-full w-full border-0"
-          />
-        </span>
-      )
-    },
-    recipe: ({ value }) => <RecipeCard recipe={value} />,
-  },
+export const dynamic = 'force-dynamic'
+
+interface Footnote {
+  _key: string
+  _type: 'footnote'
+  text?: PortableTextBlock[]
+}
+
+/**
+ * Walk the article body in document order and return every inline footnote,
+ * so each one can be assigned a stable sequential number.
+ */
+function collectFootnotes(body?: PortableTextBlock[]): Footnote[] {
+  const notes: Footnote[] = []
+  for (const block of body || []) {
+    const children = (block as { children?: { _type?: string }[] }).children
+    if (block._type === 'block' && Array.isArray(children)) {
+      for (const child of children) {
+        if (child._type === 'footnote') {
+          notes.push(child as unknown as Footnote)
+        }
+      }
+    }
+  }
+  return notes
+}
+
+const footnoteTextComponents: PortableTextComponents = {
   marks: {
-    internalLink: ({ value, children }) => {
-      const slug = value?.slug
-      if (!slug) return <>{children}</>
-      return (
-        <Link
-          href={`/posts/${slug}`}
-          className="font-medium text-accent underline underline-offset-2 transition hover:text-accent-dark"
-        >
-          {children}
-        </Link>
-      )
-    },
     link: ({ value, children }) => {
       const href = value?.href
       if (!href) return <>{children}</>
@@ -70,6 +53,88 @@ const portableTextComponents: PortableTextComponents = {
   },
 }
 
+function makePortableTextComponents(
+  footnoteNumbers: Map<string, number>
+): PortableTextComponents {
+  return {
+    types: {
+      image: ({ value }) => {
+        if (!value?.asset) return null
+        return (
+          <span className="relative block w-full aspect-[16/9] my-6 overflow-hidden rounded-lg">
+            <Image
+              src={urlForImage(value).width(1200).fit('max').url()}
+              alt={value.alt || ''}
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+          </span>
+        )
+      },
+      youtube: ({ value }) => {
+        const id = getYouTubeId(value?.url)
+        if (!id) return null
+        return (
+          <span className="relative block w-full aspect-video my-6 overflow-hidden rounded-lg">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${id}`}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full border-0"
+            />
+          </span>
+        )
+      },
+      recipe: ({ value }) => <RecipeCard recipe={value} />,
+      footnote: ({ value }) => {
+        const n = footnoteNumbers.get(value?._key)
+        if (!n) return null
+        return (
+          <sup id={`fnref-${n}`} className="text-xs font-semibold">
+            <a
+              href={`#fn-${n}`}
+              aria-label={`Jump to footnote ${n}`}
+              className="text-accent no-underline transition hover:text-accent-dark"
+            >
+              [{n}]
+            </a>
+          </sup>
+        )
+      },
+    },
+    marks: {
+      internalLink: ({ value, children }) => {
+        const slug = value?.slug
+        if (!slug) return <>{children}</>
+        return (
+          <Link
+            href={`/posts/${slug}`}
+            className="font-medium text-accent underline underline-offset-2 transition hover:text-accent-dark"
+          >
+            {children}
+          </Link>
+        )
+      },
+      link: ({ value, children }) => {
+        const href = value?.href
+        if (!href) return <>{children}</>
+        const external = /^https?:\/\//.test(href)
+        return (
+          <a
+            href={href}
+            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            className="font-medium text-accent underline underline-offset-2 transition hover:text-accent-dark"
+          >
+            {children}
+          </a>
+        )
+      },
+    },
+  }
+}
+
 interface RelatedPost {
   _id: string
   title?: string
@@ -80,26 +145,20 @@ interface Recipe {
   name?: string
   description?: string
   servings?: string
-  prepMinutes?: number
-  cookMinutes?: number
+  glassware?: string
+  garnish?: string
   ingredients?: string[]
   instructions?: string[]
   relatedPosts?: RelatedPost[]
 }
 
-function minutesToISO(minutes?: number): string | undefined {
-  if (!minutes || minutes <= 0) return undefined
-  return `PT${minutes}M`
-}
-
 function RecipeCard({ recipe }: { recipe?: Recipe }) {
   if (!recipe?.name) return null
 
-  const { name, description, servings, prepMinutes, cookMinutes } = recipe
+  const { name, description, servings, glassware, garnish } = recipe
   const ingredients = recipe.ingredients || []
   const instructions = recipe.instructions || []
   const relatedPosts = recipe.relatedPosts || []
-  const totalMinutes = (prepMinutes || 0) + (cookMinutes || 0)
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
@@ -108,9 +167,6 @@ function RecipeCard({ recipe }: { recipe?: Recipe }) {
   }
   if (description) jsonLd.description = description
   if (servings) jsonLd.recipeYield = servings
-  if (minutesToISO(prepMinutes)) jsonLd.prepTime = minutesToISO(prepMinutes)
-  if (minutesToISO(cookMinutes)) jsonLd.cookTime = minutesToISO(cookMinutes)
-  if (minutesToISO(totalMinutes)) jsonLd.totalTime = minutesToISO(totalMinutes)
   if (ingredients.length) jsonLd.recipeIngredient = ingredients
   if (instructions.length) {
     jsonLd.recipeInstructions = instructions.map((text) => ({
@@ -120,83 +176,95 @@ function RecipeCard({ recipe }: { recipe?: Recipe }) {
   }
 
   return (
-    <div className="my-8 overflow-hidden rounded-2xl border border-accent/20 bg-cream shadow-sm">
+    <div className="not-prose menu-card my-10 rounded-sm px-6 py-8 sm:px-10 sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="bg-accent px-6 py-4 text-white">
-        <span className="text-xs font-semibold uppercase tracking-wide text-white/80">
-          Recipe
-        </span>
-        <h3 className="text-2xl font-bold leading-tight">{name}</h3>
-      </div>
-      <div className="p-6">
-        {description && <p className="mb-4 text-navy-700">{description}</p>}
-
-        <div className="mb-6 flex flex-wrap gap-2">
-          {prepMinutes ? (
-            <span className="rounded-full bg-white px-3 py-1 text-sm text-navy shadow-sm">
-              <strong>Prep</strong> {prepMinutes} min
-            </span>
-          ) : null}
-          {cookMinutes ? (
-            <span className="rounded-full bg-white px-3 py-1 text-sm text-navy shadow-sm">
-              <strong>Cook</strong> {cookMinutes} min
-            </span>
-          ) : null}
-          {totalMinutes ? (
-            <span className="rounded-full bg-white px-3 py-1 text-sm text-navy shadow-sm">
-              <strong>Total</strong> {totalMinutes} min
-            </span>
-          ) : null}
-          {servings ? (
-            <span className="rounded-full bg-white px-3 py-1 text-sm text-navy shadow-sm">
-              <strong>Yield</strong> {servings}
-            </span>
-          ) : null}
-        </div>
-
-      {ingredients.length > 0 && (
-        <div className="mb-6">
-          <h4 className="mb-2 font-byline text-3xl leading-none text-accent">Ingredients</h4>
-          <ul className="list-inside list-disc space-y-1 text-navy-700 marker:text-accent">
-            {ingredients.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {instructions.length > 0 && (
-        <div>
-          <h4 className="mb-2 font-byline text-3xl leading-none text-accent">Instructions</h4>
-          <ol className="list-inside list-decimal space-y-2 text-navy-700 marker:font-bold marker:text-accent">
-            {instructions.map((step, i) => (
-              <li key={i}>{step}</li>
-            ))}
-          </ol>
-        </div>
-      )}
-
-      {relatedPosts.length > 0 && (
-        <div className="mt-6 border-t border-accent/20 pt-4">
-          <h4 className="mb-2 font-byline text-3xl leading-none text-accent">Related recipes</h4>
-          <div className="flex flex-wrap gap-2">
-            {relatedPosts
-              .filter((p) => p?.slug)
-              .map((p) => (
-                <Link
-                  key={p._id}
-                  href={`/posts/${p.slug}`}
-                  className="rounded-full bg-white px-3 py-1 text-sm font-medium text-accent shadow-sm transition hover:bg-accent hover:text-white"
-                >
-                  {p.title || 'View recipe'}
-                </Link>
-              ))}
+      <div className="relative z-10">
+        <div className="text-center">
+          <span className="menu-label text-xs text-gold">Cocktail Recipe</span>
+          <h3 className="mt-2 font-display text-3xl font-bold leading-tight text-navy sm:text-4xl">
+            {name}
+          </h3>
+          {description && (
+            <p className="mx-auto mt-2 max-w-xl text-lg italic text-navy-700">{description}</p>
+          )}
+          <div className="menu-divider mx-auto mt-5 max-w-xs">
+            <span className="text-base">❖</span>
           </div>
         </div>
-      )}
+
+        {(servings || glassware || garnish) && (
+          <dl className="mt-6 grid grid-cols-1 gap-5 text-center sm:grid-cols-3">
+            {servings ? (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-gold">Yield</dt>
+                <dd className="ms-0 mt-1 font-display text-lg text-navy">{servings}</dd>
+              </div>
+            ) : null}
+            {glassware ? (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-gold">Glassware</dt>
+                <dd className="ms-0 mt-1 font-display text-lg text-navy">{glassware}</dd>
+              </div>
+            ) : null}
+            {garnish ? (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-gold">Garnish</dt>
+                <dd className="ms-0 mt-1 font-display text-lg text-navy">{garnish}</dd>
+              </div>
+            ) : null}
+          </dl>
+        )}
+
+        <div className="mt-8 grid gap-8 sm:grid-cols-2">
+          {ingredients.length > 0 && (
+            <div>
+              <h4 className="menu-label mb-3 text-sm text-gold">Ingredients</h4>
+              <ul className="space-y-2 text-lg text-navy-900 marker:text-accent">
+                {ingredients.map((item, i) => (
+                  <li key={i} className="border-b border-dotted border-gold/40 pb-2">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {instructions.length > 0 && (
+            <div>
+              <h4 className="menu-label mb-3 text-sm text-gold">Method</h4>
+              <ol className="space-y-3 text-lg text-navy-900">
+                {instructions.map((step, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="font-display text-lg font-bold text-accent">{i + 1}.</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+
+        {relatedPosts.length > 0 && (
+          <div className="mt-8 border-t border-dotted border-gold/50 pt-5 text-center">
+            <h4 className="menu-label mb-3 text-sm text-gold">Pairs Well With</h4>
+            <div className="flex flex-wrap justify-center gap-2">
+              {relatedPosts
+                .filter((p) => p?.slug)
+                .map((p) => (
+                  <Link
+                    key={p._id}
+                    href={`/posts/${p.slug}`}
+                    className="rounded-full border border-gold/50 bg-white px-4 py-1.5 font-display text-sm font-medium text-navy shadow-sm transition hover:bg-accent hover:text-white"
+                  >
+                    {p.title || 'View recipe'}
+                  </Link>
+                ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -227,11 +295,11 @@ interface Post {
   _id: string
   title: string
   slug: { current: string }
-  excerpt?: string
   image?: any
   body?: any[]
   publishedAt: string
   author?: string
+  featured?: boolean
 }
 
 async function getPost(slug: string, preview: boolean): Promise<Post | null> {
@@ -247,7 +315,6 @@ async function getPost(slug: string, preview: boolean): Promise<Post | null> {
         _id,
         title,
         slug,
-        excerpt,
         image,
         body[]{
           ...,
@@ -267,7 +334,8 @@ async function getPost(slug: string, preview: boolean): Promise<Post | null> {
           }
         },
         publishedAt,
-        author
+        author,
+        featured
       }`,
       { slug }
     )
@@ -312,7 +380,6 @@ export async function generateMetadata({ params }: PostPageProps) {
 
   return {
     title: post.title,
-    description: post.excerpt,
   }
 }
 
@@ -326,6 +393,11 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   const comments = await getComments(post._id)
+
+  const footnotes = collectFootnotes(post.body)
+  const footnoteNumbers = new Map<string, number>()
+  footnotes.forEach((note, i) => footnoteNumbers.set(note._key, i + 1))
+  const portableTextComponents = makePortableTextComponents(footnoteNumbers)
 
   return (
     <article className="mx-auto max-w-3xl">
@@ -343,6 +415,12 @@ export default async function PostPage({ params }: PostPageProps) {
       >
         ← Back to Recipes
       </Link>
+
+      {post.featured && (
+        <span className="mb-4 inline-block rounded-full bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+          ★ Featured
+        </span>
+      )}
 
       <h1 className="mb-4 text-3xl font-bold leading-tight text-navy sm:text-4xl">
         {post.title}
@@ -370,16 +448,37 @@ export default async function PostPage({ params }: PostPageProps) {
         )}
       </div>
 
-      {post.excerpt && (
-        <p className="mb-8 border-l-4 border-accent pl-4 text-lg italic text-navy-700 sm:text-xl">
-          {post.excerpt}
-        </p>
-      )}
-
       {post.body && (
-        <div className="prose max-w-none prose-headings:font-display prose-headings:text-navy prose-a:text-accent prose-strong:text-navy mb-8">
+        <div className="prose prose-lg max-w-none text-lg leading-relaxed prose-headings:font-display prose-headings:text-navy prose-p:text-navy-900 prose-li:text-navy-900 prose-a:text-accent prose-strong:text-navy sm:text-xl mb-8">
           <PortableText value={post.body} components={portableTextComponents} />
         </div>
+      )}
+
+      {footnotes.length > 0 && (
+        <section className="mt-12 border-t border-navy-100 pt-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-navy-700">
+            Footnotes
+          </h2>
+          <ol className="space-y-2 text-sm text-navy-700">
+            {footnotes.map((note, i) => (
+              <li key={note._key} id={`fn-${i + 1}`} className="flex gap-2">
+                <span className="font-semibold text-accent">{i + 1}.</span>
+                <span className="[&_a]:text-accent [&_a]:underline">
+                  {note.text ? (
+                    <PortableText value={note.text} components={footnoteTextComponents} />
+                  ) : null}{' '}
+                  <a
+                    href={`#fnref-${i + 1}`}
+                    aria-label={`Back to reference ${i + 1}`}
+                    className="text-accent no-underline transition hover:text-accent-dark"
+                  >
+                    ↩
+                  </a>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
       )}
 
       <section className="mt-12 border-t border-navy-100 pt-8">

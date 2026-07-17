@@ -1,20 +1,28 @@
 import type { Metadata } from 'next'
-import { Nixie_One, Ledger, Caveat } from 'next/font/google'
+import { Playfair_Display, Cormorant_Garamond, Caveat, Yellowtail } from 'next/font/google'
 import { Analytics } from './Analytics'
 import { SiteHeader } from './SiteHeader'
 import './globals.css'
 
-const nixie = Nixie_One({
+const playfair = Playfair_Display({
   subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-nixie',
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-playfair',
   display: 'swap',
 })
 
-const ledger = Ledger({
+const yellowtail = Yellowtail({
   subsets: ['latin'],
   weight: ['400'],
-  variable: '--font-ledger',
+  variable: '--font-jersey',
+  display: 'swap',
+})
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
   display: 'swap',
 })
 
@@ -38,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${nixie.variable} ${ledger.variable} ${caveat.variable}`}
+      className={`${playfair.variable} ${cormorant.variable} ${caveat.variable} ${yellowtail.variable}`}
     >
       <body className="flex min-h-screen flex-col">
         <SiteHeader />
@@ -47,12 +55,15 @@ export default function RootLayout({
           {children}
         </main>
 
-        <footer className="mt-16 bg-navy text-white">
+        <footer className="mt-16 bg-navy-900 text-white">
           <div className="mx-auto max-w-5xl px-4 py-10 text-center">
-            <p className="font-display text-lg font-bold">
-              Optimal<span className="text-accent">Mocktail</span>
+            <p className="font-jersey text-3xl">
+              Optimal<span className="text-accent-light">Mocktail</span>
             </p>
-            <p className="mt-2 text-sm text-white/70">
+            <p className="mt-1 font-byline text-2xl text-accent-light">
+              , not slurred.
+            </p>
+            <p className="mt-3 text-sm text-white/70">
               &copy; 2026 Optimal Mocktail. All rights reserved.
             </p>
           </div>

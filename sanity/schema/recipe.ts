@@ -24,16 +24,16 @@ export const recipeType = defineType({
       description: 'e.g. "4 drinks" or "Serves 2"',
     }),
     defineField({
-      name: 'prepMinutes',
-      title: 'Prep time (minutes)',
-      type: 'number',
-      validation: (Rule) => Rule.min(0),
+      name: 'glassware',
+      title: 'Glassware',
+      type: 'string',
+      description: 'e.g. "Coupe glass" or "Highball"',
     }),
     defineField({
-      name: 'cookMinutes',
-      title: 'Cook time (minutes)',
-      type: 'number',
-      validation: (Rule) => Rule.min(0),
+      name: 'garnish',
+      title: 'Garnish',
+      type: 'string',
+      description: 'e.g. "Lime wheel" or "Mint sprig"',
     }),
     defineField({
       name: 'ingredients',
@@ -48,13 +48,6 @@ export const recipeType = defineType({
       type: 'array',
       of: [{ type: 'text', rows: 2 }],
       validation: (Rule) => Rule.required().min(1),
-    }),
-    defineField({
-      name: 'relatedPosts',
-      title: 'Related recipes',
-      type: 'array',
-      description: 'Link to other posts shown as chips at the bottom of the card',
-      of: [{ type: 'reference', to: [{ type: 'post' }] }],
     }),
   ],
   preview: {
