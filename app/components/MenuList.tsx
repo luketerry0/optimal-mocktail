@@ -20,13 +20,15 @@ export function MenuList({ items }: { items: MenuItem[] }) {
   return (
     <div className="menu-card rounded-sm px-5 py-6 sm:px-10 sm:py-10">
       <div className="relative z-10 divide-y-0">
-        {items.map((item) => (
+        {items
+          .filter((item) => item.slug?.current)
+          .map((item) => (
           <Link
             key={item._id}
             href={`/posts/${item.slug.current}`}
             className="menu-row group flex flex-col items-center gap-3 py-5 text-center sm:flex-row sm:items-start sm:gap-6 sm:text-left"
           >
-            {item.image ? (
+            {item.image?.asset ? (
               <div className="relative hidden h-16 w-16 shrink-0 overflow-hidden rounded-full ring-1 ring-gold/50 sm:block">
                 <Image
                   src={urlForImage(item.image).width(160).height(160).fit('crop').url()}

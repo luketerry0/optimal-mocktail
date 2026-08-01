@@ -17,7 +17,7 @@ export default defineConfig({
   },
   document: {
     actions: (prev, context) =>
-      context.schemaType === 'post'
+      context.schemaType === 'post' || context.schemaType === 'product'
         ? prev.map((action) =>
             action.action === 'publish' ? PublishWithTimestamp : action
           )
