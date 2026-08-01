@@ -32,7 +32,7 @@ async function getPosts(type: 'mocktails' | 'substitutes' | 'all'): Promise<Post
     }
 
     const posts = await sanityClient(preview).fetch(
-      `*[_type == "post" ${!preview ? '&& defined(publishedAt)' : ''} ${typeFilter}] | order(featured desc, publishedAt desc) {
+      `*[_type == "post" ${!preview ? '&& defined(publishedAt)' : ''} && resource != true ${typeFilter}] | order(featured desc, publishedAt desc) {
         _id,
         title,
         slug,

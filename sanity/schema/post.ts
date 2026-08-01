@@ -118,6 +118,14 @@ export const postType = defineType({
         'Turn on if this recipe is an alcohol substitute rather than a mocktail.',
       initialValue: false,
     }),
+    defineField({
+      name: 'resource',
+      title: 'Show under Resources',
+      type: 'boolean',
+      description:
+        'Turn on to show this article under the Resources tab instead of Recipes.',
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {

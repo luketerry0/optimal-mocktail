@@ -21,6 +21,7 @@ const links: NavLink[] = [
     ],
   },
   { href: '/featured', label: 'Featured Recipes' },
+  { href: '/resources', label: 'Resources' },
   { href: '/shop', label: 'Shop' },
   { href: '/about', label: 'About' },
 ]
