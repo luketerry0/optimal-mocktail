@@ -31,6 +31,8 @@ export const postType = defineType({
       name: 'image',
       title: 'Featured Image',
       type: 'image',
+      description:
+        'Displayed in a 16:9 frame. For best results upload a landscape image around 1600×900px. Use the hotspot to set the focal point that stays centered when cropped.',
       options: {
         hotspot: true,
       },
