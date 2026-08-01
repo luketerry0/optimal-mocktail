@@ -34,6 +34,14 @@ export const productType = defineType({
         'Lower numbers are displayed first. Ties are broken alphabetically by title.',
       initialValue: 0,
     }),
+    defineField({
+      name: 'publishedAt',
+      title: 'Published at',
+      type: 'datetime',
+      readOnly: true,
+      description:
+        'Automatically set the first time this product is published. Unpublished products appear only on the preview site.',
+    }),
   ],
   orderings: [
     {

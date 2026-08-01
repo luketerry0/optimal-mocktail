@@ -61,7 +61,7 @@ export default function RootLayout({
               Optimal<span className="text-accent-light">Mocktail</span>
             </p>
             <p className="mt-1 font-byline text-2xl text-accent-light">
-              , not slurred.
+            Shaken , not slurred.
             </p>
             <p className="mt-3 text-sm text-white/70">
               &copy; 2026 Optimal Mocktail. All rights reserved.

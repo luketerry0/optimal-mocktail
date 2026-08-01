@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { sanityClient } from '@/lib/sanity.client'
+import { isPreviewEnabled } from '@/lib/draft-mode'
 import { urlForImage } from '@/lib/sanity.image'
 
 export const metadata: Metadata = {
@@ -27,8 +28,10 @@ async function getProducts(): Promise<Product[]> {
       return []
     }
 
-    const products = await sanityClient(false).fetch(
-      `*[_type == "product"] | order(order asc, title asc) {
+    const preview = await isPreviewEnabled()
+
+    const products = await sanityClient(preview).fetch(
+      `*[_type == "product" ${!preview ? '&& defined(publishedAt)' : ''}] | order(order asc, title asc) {
         _id,
         title,
         link,
@@ -45,9 +48,18 @@ async function getProducts(): Promise<Product[]> {
 
 export default async function ShopPage() {
   const products = await getProducts()
+  const preview = await isPreviewEnabled()
 
   return (
     <div>
+      {preview && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-6">
+          <p className="text-yellow-800 text-sm">
+            📝 <strong>Preview Mode</strong> — You&apos;re viewing unpublished content
+          </p>
+        </div>
+      )}
+
       <h1 className="mb-8 text-3xl font-bold text-navy sm:text-4xl">Shop</h1>
 
       {products.length > 0 && (
@@ -60,7 +72,7 @@ export default async function ShopPage() {
               rel="noopener noreferrer"
               className="group flex flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
-              {product.photo ? (
+              {product.photo?.asset ? (
                 <div className="relative aspect-[16/10] w-full overflow-hidden">
                   <Image
                     src={urlForImage(product.photo).width(600).height(375).fit('crop').url()}

@@ -426,7 +426,7 @@ export default async function PostPage({ params }: PostPageProps) {
         {post.title}
       </h1>
 
-      {post.image && (
+      {post.image?.asset && (
         <div className="relative mb-8 aspect-[16/9] w-full overflow-hidden rounded-2xl">
           <Image
             src={urlForImage(post.image).width(1200).height(675).fit('crop').url()}

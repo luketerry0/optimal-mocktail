@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev-preview": "PREVIEW_SITE=true next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "studio": "sanity dev",
     "studio:build": "sanity build",
-    "publish-preview": "vercel alias set $(vercel deploy --yes) optimal-mocktail-preview.vercel.app"
+    "publish-preview": "URL=$(vercel deploy --yes) && vercel alias set \"$URL\" preview.optimalmocktail.com && vercel alias set \"$URL\" optimal-mocktail-preview.vercel.app"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",
